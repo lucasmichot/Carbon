@@ -336,7 +336,12 @@ class SettersTest extends AbstractTestCase
         $d->timestamp = 1600887164.88952298;
         $this->assertSame('2020-09-23 14:52:44.889523', $d->format('Y-m-d H:i:s.u'));
 
-        $d->setTimestamp(1599828571.23561248);
+        $d->setTimestamp(
+            // See https://github.com/php/php-src/issues/14332
+            PHP_VERSION < 8.4
+                ? 1599828571.23561248
+                : 1599828571.2356121,
+        );
         $this->assertSame('2020-09-11 08:49:31.235612', $d->format('Y-m-d H:i:s.u'));
 
         $d->timestamp = '0.88951247 1600887164';
@@ -624,13 +629,21 @@ class SettersTest extends AbstractTestCase
         $this->assertSame(12, $d->getMidDayAt());
     }
 
+    public function testSetUnitNoOverflowFebruary()
+    {
+        $d = Carbon::parse('2024-02-29')->setUnitNoOverFlow('day', 31, 'month');
+
+        $this->assertInstanceOf(Carbon::class, $d);
+        $this->assertSame('2024-02-29 23:59:59.999999', $d->format('Y-m-d H:i:s.u'));
+    }
+
     public function testSetUnitNoOverflow()
     {
         $results = [
             'current' => 0,
             'start' => 0,
             'end' => 0,
-            'failure' => 0,
+            'failure' => [],
         ];
 
         for ($i = 0; $i < static::SET_UNIT_NO_OVERFLOW_SAMPLE; $i++) {
@@ -653,7 +666,7 @@ class SettersTest extends AbstractTestCase
                 'microsecond' => 1000000,
             ];
             $valueUnit = array_keys($units)[mt_rand(0, \count($units) - 1)];
-            $value = mt_rand() > 0.5 ?
+            $value = mt_rand(0, 1) === 1 ?
                 mt_rand(-9999, 9999) :
                 mt_rand(-60, 60);
 
@@ -663,8 +676,22 @@ class SettersTest extends AbstractTestCase
             $start = $original->copy()->startOf($overflowUnit);
             $end = $original->copy()->endOf($overflowUnit);
 
-            if ($date < $start || $date > $end) {
-                $results['failure']++;
+            if ($date->lessThan($start) || $date->greaterThan($end)) {
+                $results['failure'][] = [
+                    'year' => $year,
+                    'month' => $month,
+                    'day' => $day,
+                    'hour' => $hour,
+                    'minute' => $minute,
+                    'second' => $second,
+                    'microsecond' => $microsecond,
+                    'valueUnit' => $valueUnit,
+                    'value' => $value,
+                    'overflowUnit' => $overflowUnit,
+                    'date' => $date->format('Y-m-d H:i:s'),
+                    'start' => $start->format('Y-m-d H:i:s'),
+                    'end' => $end->format('Y-m-d H:i:s'),
+                ];
 
                 continue;
             }
@@ -717,7 +744,7 @@ class SettersTest extends AbstractTestCase
         }
 
         $minimum = static::SET_UNIT_NO_OVERFLOW_SAMPLE / 100;
-        $this->assertSame(0, $results['failure']);
+        $this->assertSame([], $results['failure']);
         $this->assertGreaterThan($minimum, $results['start']);
         $this->assertGreaterThan($minimum, $results['end']);
         $this->assertGreaterThan($minimum, $results['current']);
@@ -761,7 +788,7 @@ class SettersTest extends AbstractTestCase
             'current' => 0,
             'start' => 0,
             'end' => 0,
-            'failure' => 0,
+            'failure' => [],
         ];
 
         for ($i = 0; $i < static::SET_UNIT_NO_OVERFLOW_SAMPLE; $i++) {
@@ -784,7 +811,7 @@ class SettersTest extends AbstractTestCase
                 'microsecond' => 1000000,
             ];
             $valueUnit = array_keys($units)[mt_rand(0, \count($units) - 1)];
-            $value = mt_rand() > 0.5 ?
+            $value = mt_rand(0, 1) === 1 ?
                 mt_rand(-9999, 9999) :
                 mt_rand(-60, 60);
 
@@ -794,8 +821,22 @@ class SettersTest extends AbstractTestCase
             $start = $original->copy()->startOf($overflowUnit);
             $end = $original->copy()->endOf($overflowUnit);
 
-            if ($date < $start || $date > $end) {
-                $results['failure']++;
+            if ($date->lessThan($start) || $date->greaterThan($end)) {
+                $results['failure'][] = [
+                    'year' => $year,
+                    'month' => $month,
+                    'day' => $day,
+                    'hour' => $hour,
+                    'minute' => $minute,
+                    'second' => $second,
+                    'microsecond' => $microsecond,
+                    'valueUnit' => $valueUnit,
+                    'value' => $value,
+                    'overflowUnit' => $overflowUnit,
+                    'date' => $date->format('Y-m-d H:i:s.u e O'),
+                    'start' => $start->format('Y-m-d H:i:s.u e O'),
+                    'end' => $end->format('Y-m-d H:i:s.u e O'),
+                ];
 
                 continue;
             }
@@ -807,8 +848,7 @@ class SettersTest extends AbstractTestCase
             }
             if ($value === $date->$valueUnit ||
                 $modulo === $date->$valueUnit ||
-                (method_exists($date, "diffInReal$unit") && -$date->{"diffInReal$unit"}($original, false) === $value) ||
-                -((int) round($date->{"diffIn$unit"}($original, false))) === $value
+                (method_exists($date, "diffInReal$unit") && -$date->{"diffInReal$unit"}($original, false) === $value)
             ) {
                 $results['current']++;
 
@@ -825,6 +865,33 @@ class SettersTest extends AbstractTestCase
                 $results['end']++;
 
                 continue;
+            }
+
+            $currentDiff = -((int) round($date->{"diffIn$unit"}($original, false)));
+
+            if ($currentDiff === $value) {
+                $results['current']++;
+
+                continue;
+            }
+
+            $delta = ($currentDiff - $value);
+
+            if ($valueUnit === 'hour') {
+                $diff = $this->getOffsetChangeOfTheDay($date) ?: $this->getOffsetChangeOfTheDay($original);
+
+                if ($diff !== 0) {
+                    $sign = $diff < 0 ? -1 : 1;
+                    $diff = abs($diff);
+                    $minutes = $diff % 100;
+                    $hours = (int) ($sign * (floor($diff / 100) + $minutes / 60));
+
+                    if ($delta === -$hours) {
+                        $results['current']++;
+
+                        continue;
+                    }
+                }
             }
 
             $this->failOperation(
@@ -843,7 +910,7 @@ class SettersTest extends AbstractTestCase
         }
 
         $minimum = static::SET_UNIT_NO_OVERFLOW_SAMPLE / 100;
-        $this->assertSame(0, $results['failure']);
+        $this->assertSame([], $results['failure']);
         $this->assertGreaterThan($minimum, $results['start']);
         $this->assertGreaterThan($minimum, $results['end']);
         $this->assertGreaterThan($minimum, $results['current']);
@@ -856,7 +923,7 @@ class SettersTest extends AbstractTestCase
             'current' => 0,
             'start' => 0,
             'end' => 0,
-            'failure' => 0,
+            'failure' => [],
         ];
 
         for ($i = 0; $i < static::SET_UNIT_NO_OVERFLOW_SAMPLE; $i++) {
@@ -879,7 +946,7 @@ class SettersTest extends AbstractTestCase
                 'microsecond' => 1000000,
             ];
             $valueUnit = array_keys($units)[mt_rand(0, \count($units) - 1)];
-            $value = mt_rand() > 0.5 ?
+            $value = mt_rand(0, 1) === 1 ?
                 mt_rand(-9999, 9999) :
                 mt_rand(-60, 60);
 
@@ -889,8 +956,22 @@ class SettersTest extends AbstractTestCase
             $start = $original->copy()->startOf($overflowUnit);
             $end = $original->copy()->endOf($overflowUnit);
 
-            if ($date < $start || $date > $end) {
-                $results['failure']++;
+            if ($date->lessThan($start) || $date->greaterThan($end)) {
+                $results['failure'][] = [
+                    'year' => $year,
+                    'month' => $month,
+                    'day' => $day,
+                    'hour' => $hour,
+                    'minute' => $minute,
+                    'second' => $second,
+                    'microsecond' => $microsecond,
+                    'valueUnit' => $valueUnit,
+                    'value' => $value,
+                    'overflowUnit' => $overflowUnit,
+                    'date' => $date->format('Y-m-d H:i:s.u e O'),
+                    'start' => $start->format('Y-m-d H:i:s.u e O'),
+                    'end' => $end->format('Y-m-d H:i:s.u e O'),
+                ];
 
                 continue;
             }
@@ -904,12 +985,26 @@ class SettersTest extends AbstractTestCase
 
             if ($value === $date->$valueUnit ||
                 $modulo === $date->$valueUnit ||
-                (method_exists($date, "diffInReal$unit") && $value === $date->{"diffInReal$unit"}($original, false)) ||
-                ((int) round($date->{"diffIn$unit"}($original, false))) === $value
+                (method_exists($date, "diffInReal$unit") && $value === $date->{"diffInReal$unit"}($original, false))
             ) {
                 $results['current']++;
 
                 continue;
+            }
+
+            if ($valueUnit === 'day') {
+                $dateInterval = $date->diffAsDateInterval($original);
+                $days = $dateInterval->days;
+
+                if ($days !== false) {
+                    $days *= $dateInterval->invert ? -1 : 1;
+
+                    if ($value === $days) {
+                        $results['current']++;
+
+                        continue;
+                    }
+                }
             }
 
             if ($date->$valueUnit === $start->$valueUnit) {
@@ -924,6 +1019,33 @@ class SettersTest extends AbstractTestCase
                 continue;
             }
 
+            $currentDiff = (int) round($date->{"diffIn$unit"}($original, false));
+
+            if ($currentDiff === $value) {
+                $results['current']++;
+
+                continue;
+            }
+
+            $delta = ($currentDiff - $value);
+
+            if ($valueUnit === 'hour') {
+                $diff = $this->getOffsetChangeOfTheDay($date) ?: $this->getOffsetChangeOfTheDay($original);
+
+                if ($diff !== 0) {
+                    $sign = $diff < 0 ? -1 : 1;
+                    $diff = abs($diff);
+                    $minutes = $diff % 100;
+                    $hours = (int) ($sign * (floor($diff / 100) + $minutes / 60));
+
+                    if ($delta === $hours) {
+                        $results['current']++;
+
+                        continue;
+                    }
+                }
+            }
+
             $this->failOperation(
                 $original,
                 $date,
@@ -936,15 +1058,47 @@ class SettersTest extends AbstractTestCase
                 $unit,
                 $modulo,
                 $value,
+                $hours ?? null,
+                $delta,
             );
         }
 
         $minimum = static::SET_UNIT_NO_OVERFLOW_SAMPLE / 100;
-        $this->assertSame(0, $results['failure']);
+        $this->assertSame([], $results['failure']);
         $this->assertGreaterThan($minimum, $results['start']);
         $this->assertGreaterThan($minimum, $results['end']);
         $this->assertGreaterThan($minimum, $results['current']);
         $this->assertSame(static::SET_UNIT_NO_OVERFLOW_SAMPLE, $results['end'] + $results['start'] + $results['current']);
+    }
+
+    public function testOverflowInDst()
+    {
+        $date = Carbon::create(2335, 11, 3, 1, 30, 50.138159)
+            ->subUnitNoOverflow('year', 5668, 'second');
+
+        $this->assertSame(
+            '2335-11-03 01:30:50.000000 America/Toronto -0400',
+            $date->format('Y-m-d H:i:s.u e O'),
+        );
+
+        $date = Carbon::parse('2020-10-15 03:22:57.442989', 'America/Toronto')->hours(-5302);
+
+        $diff = (int) ($date->copy()->startOfDay()->format('O') - $date->copy()->endOfDay()->format('O'));
+        $sign = $diff < 0 ? -1 : 1;
+        $diff = abs($diff);
+        $minutes = $diff % 100;
+        $hours = $sign * (floor($diff / 100) + $minutes / 60);
+
+        $diffInHours = $date->diffInHours(
+            Carbon::parse('2020-10-15 03:22:57.442989', 'America/Toronto'),
+        );
+
+        $this->assertSame(5305.0 + $hours, $diffInHours);
+    }
+
+    private function getOffsetChangeOfTheDay(Carbon $date): int
+    {
+        return (int) ($date->copy()->startOfDay()->format('O') - $date->copy()->endOfDay()->format('O'));
     }
 
     /**
@@ -961,7 +1115,9 @@ class SettersTest extends AbstractTestCase
         string $overflowUnit,
         string $unit,
         int $modulo,
-        int $variableValue
+        int $variableValue,
+        ?int $hours = null,
+        ?int $delta = null,
     ): void {
         throw new Exception(implode("\n", [
             'Unhandled result for: '.
@@ -970,12 +1126,15 @@ class SettersTest extends AbstractTestCase
             ")->$method(".implode(', ', array_map(function ($value) {
                 return var_export($value, true);
             }, [$valueUnit, $value, $overflowUnit])).');',
-            'Getting: '.$date->format('Y-m-d H:i:s.u e'),
+            'Getting: '.$date->format('Y-m-d H:i:s.u e O'),
             "Current $valueUnit: ".$date->$valueUnit,
             'Is neither '.$start->$valueUnit." (from $start)",
             'Nor '.$end->$valueUnit." (from $end)",
             "Nor $value (from value)",
             "Nor $modulo (from modulo)",
+            ...($hours !== null ? [
+                "Not matching diff (hours = $hours vs delta = ".($delta ?? 'null').')',
+            ] : []),
             method_exists($date, "diffInReal$unit")
                 ? "diffInReal$unit() exists and returns ".$date->{"diffInReal$unit"}($original, false)
                     ." while expecting $variableValue"

@@ -15,6 +15,7 @@ namespace Tests\CarbonInterval;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
+use DateTimeImmutable;
 use Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -279,5 +280,31 @@ class TotalTest extends AbstractTestCase
     public function testWithDiffInterval()
     {
         $this->assertSame(51.0, Carbon::parse('2020-08-10')->diff('2020-09-30')->totalDays);
+    }
+
+    public function testAlterationAfterDiff()
+    {
+        $t1 = Carbon::now();
+        $t2 = $t1->copy()->addMinutes(2);
+
+        $p = $t1->diffAsCarbonInterval($t2);
+        $p->addSeconds(10);
+
+        $this->assertSame(130.0, $p->totalSeconds);
+    }
+
+    public function testAbsoluteDiff()
+    {
+        Carbon::setTestNowAndTimezone(new DateTimeImmutable('now UTC'));
+
+        $diff = Carbon::now()->addDays(15)->diff('now');
+
+        $this->assertSame(-1296000000000.0, $diff->totalMicroseconds);
+        $this->assertTrue($diff->lte(CarbonInterval::minutes(30)));
+
+        $diff = Carbon::now()->addDays(15)->diff('now', true);
+
+        $this->assertSame(1296000000000.0, $diff->totalMicroseconds);
+        $this->assertFalse($diff->lte(CarbonInterval::minutes(30)));
     }
 }

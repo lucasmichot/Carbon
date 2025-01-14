@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Tests\CarbonInterval;
 
+use Carbon\Carbon;
 use Carbon\CarbonInterval;
+use DateInterval;
 use InvalidArgumentException;
 use Tests\AbstractTestCase;
 
@@ -81,12 +83,11 @@ class RoundingTest extends AbstractTestCase
             'hour'        => [60, 'minutes'],
         ]);
 
-        $this->assertEqualsWithDelta(
+        $this->assertVeryClose(
             43.166666666666664,
             CarbonInterval::make('43h3m6s')
                 ->ceilMinutes(10)
                 ->totalHours,
-            0.00000001
         );
         $this->assertSame(
             43.0,
@@ -100,12 +101,11 @@ class RoundingTest extends AbstractTestCase
                 ->roundMinutes()
                 ->totalHours
         );
-        $this->assertEqualsWithDelta(
+        $this->assertVeryClose(
             43.05833333333333,
             CarbonInterval::make('43h3m26s')
                 ->roundMinutes(0.5)
                 ->totalHours,
-            0.00000001
         );
         $this->assertSame(
             -43.05,
@@ -135,5 +135,33 @@ class RoundingTest extends AbstractTestCase
         $this->assertSame(22.0, CarbonInterval::days(22)->ceil('2 days')->totalDays);
         $this->assertSame(24.0, CarbonInterval::days(22)->ceil(CarbonInterval::days(6))->totalDays);
         $this->assertSame(24.0, CarbonInterval::days(22)->ceilUnit('day', 6)->totalDays);
+    }
+
+    public function testRoundCarbonInstanceToIntervalInNonDefaultLocale()
+    {
+        $interval15m = CarbonInterval::fromString('PT15M')->locale('es');
+
+        $this->assertSame(
+            '19:30',
+            Carbon::parse('2024-04-15T19:36:12')->floor($interval15m)->format('H:i')
+        );
+        $this->assertSame(
+            '19:45',
+            Carbon::parse('2024-04-15T19:36:12')->ceil($interval15m)->format('H:i')
+        );
+        $this->assertSame('15 minutos', $interval15m->forHumans());
+
+        $interval1h = DateInterval::createFromDateString('1 hour');
+        Carbon::setLocale('zh');
+
+        $this->assertSame('1小时', CarbonInterval::make($interval1h)->forHumans());
+        $this->assertSame(
+            '19:00',
+            Carbon::parse('2024-04-15T19:36:12')->floor($interval1h)->format('H:i')
+        );
+        $this->assertSame(
+            '20:00',
+            Carbon::parse('2024-04-15T19:36:12')->ceil($interval1h)->format('H:i')
+        );
     }
 }
