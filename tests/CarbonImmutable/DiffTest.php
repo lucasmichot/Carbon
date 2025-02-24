@@ -23,7 +23,7 @@ use TypeError;
 
 class DiffTest extends AbstractTestCase
 {
-    public function wrapWithTestNow(Closure $func, CarbonInterface $dt = null): void
+    public function wrapWithTestNow(Closure $func, ?CarbonInterface $dt = null): void
     {
         parent::wrapWithTestNow($func, $dt ?: Carbon::createMidnightDate(2012, 1, 1));
     }
@@ -1642,40 +1642,40 @@ class DiffTest extends AbstractTestCase
 
         $this->assertSame(8986.665965, Carbon::parse('2018-03-31 23:55:12.321456')->floatDiffInSeconds(Carbon::parse('2018-04-01 02:24:58.987421')));
 
-        $this->assertSame(1.0006944444444443, Carbon::parse('2018-12-01 00:00')->floatDiffInDays(Carbon::parse('2018-12-02 00:01')));
-        $this->assertSame(1.0006944444444443 / 7, Carbon::parse('2018-12-01 00:00')->floatDiffInWeeks(Carbon::parse('2018-12-02 00:01')));
+        $this->assertVeryClose(1.0006944444444443, Carbon::parse('2018-12-01 00:00')->floatDiffInDays(Carbon::parse('2018-12-02 00:01')));
+        $this->assertVeryClose(1.0006944444444443 / 7, Carbon::parse('2018-12-01 00:00')->floatDiffInWeeks(Carbon::parse('2018-12-02 00:01')));
 
-        $this->assertSame(0.9714742503779745, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2018-04-12 14:24:58.987421'), true));
-        $this->assertSame(0.9714742503779745, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInMonths(Carbon::parse('2018-03-13 20:55:12.321456'), true));
-        $this->assertSame(0.9714742503779745, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2018-04-12 14:24:58.987421')));
-        $this->assertSame(-0.9714742503779745, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInMonths(Carbon::parse('2018-03-13 20:55:12.321456')));
+        $this->assertVeryClose(0.959000397985738, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2018-04-12 14:24:58.987421'), true));
+        $this->assertVeryClose(0.959000397985738, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInMonths(Carbon::parse('2018-03-13 20:55:12.321456'), true));
+        $this->assertVeryClose(0.959000397985738, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2018-04-12 14:24:58.987421')));
+        $this->assertVeryClose(-0.959000397985738, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInMonths(Carbon::parse('2018-03-13 20:55:12.321456')));
 
-        $this->assertSame(16.557633744585264, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2019-06-30 14:24:58.987421'), true));
+        $this->assertVeryClose(16.557633744585264, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2019-06-30 14:24:58.987421'), true));
 
-        $this->assertSame(15.971474250377973, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2019-06-12 14:24:58.987421'), true));
-        $this->assertSame(15.971474250377973, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInMonths(Carbon::parse('2018-02-13 20:55:12.321456'), true));
-        $this->assertSame(15.971474250377973, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2019-06-12 14:24:58.987421')));
-        $this->assertSame(-15.971474250377973, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInMonths(Carbon::parse('2018-02-13 20:55:12.321456')));
+        $this->assertVeryClose(15.959000397985738, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2019-06-12 14:24:58.987421'), true));
+        $this->assertVeryClose(15.959000397985738, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInMonths(Carbon::parse('2018-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(15.959000397985738, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInMonths(Carbon::parse('2019-06-12 14:24:58.987421')));
+        $this->assertVeryClose(-15.959000397985738, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInMonths(Carbon::parse('2018-02-13 20:55:12.321456')));
 
         $this->assertSame(1.0, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2019-02-13 20:55:12.321456'), true));
-        $this->assertSame(1.3746000338015283, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2019-06-30 14:24:58.987421'), true));
-        $this->assertSame(0.9609014036645421, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2019-01-30 14:24:58.987421'), true));
+        $this->assertVeryClose(1.3746000338015283, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2019-06-30 14:24:58.987421'), true));
+        $this->assertVeryClose(0.9609014036645421, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2019-01-30 14:24:58.987421'), true));
 
-        $this->assertSame(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2019-06-12 14:24:58.987421'), true));
-        $this->assertSame(1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
-        $this->assertSame(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2019-06-12 14:24:58.987421')));
-        $this->assertSame(-1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInYears(Carbon::parse('2018-02-13 20:55:12.321456')));
+        $this->assertVeryClose(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2019-06-12 14:24:58.987421'), true));
+        $this->assertVeryClose(1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2019-06-12 14:24:58.987421')));
+        $this->assertVeryClose(-1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInYears(Carbon::parse('2018-02-13 20:55:12.321456')));
 
-        $this->assertSame(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2023-06-12 14:24:58.987421'), true));
-        $this->assertSame(5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
-        $this->assertSame(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2023-06-12 14:24:58.987421')));
-        $this->assertSame(-5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInYears(Carbon::parse('2018-02-13 20:55:12.321456')));
+        $this->assertVeryClose(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2023-06-12 14:24:58.987421'), true));
+        $this->assertVeryClose(5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInYears(Carbon::parse('2023-06-12 14:24:58.987421')));
+        $this->assertVeryClose(-5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInYears(Carbon::parse('2018-02-13 20:55:12.321456')));
 
         $this->assertSame(1.0, Carbon::parse('2018-10-01 00:00:00', 'Europe/Paris')->floatDiffInMonths(Carbon::parse('2018-11-01 00:00:00', 'Europe/Paris'), true));
         $this->assertSame(1.0, Carbon::parse('2018-10-28 00:00:00')->floatDiffInMonths(Carbon::parse('2018-11-28 00:00:00'), true));
         $this->assertSame(1.0, Carbon::parse('2018-10-28 00:00:00', 'Europe/Paris')->floatDiffInMonths(Carbon::parse('2018-11-28 00:00:00', 'Europe/Paris'), true));
 
-        $this->assertSame(-0.9999999999884258, Carbon::parse('2020-12-17 00:00:00.000001')->floatDiffInDays('2020-12-16 00:00:00.000002'));
+        $this->assertVeryClose(-0.9999999999884258, Carbon::parse('2020-12-17 00:00:00.000001')->floatDiffInDays('2020-12-16 00:00:00.000002'));
 
         $this->assertSame(-1.0, Carbon::parse('2018-11-01 00:00:00', 'Europe/Paris')->floatDiffInMonths(Carbon::parse('2018-10-01 00:00:00', 'Europe/Paris')));
         $this->assertSame(-1.0, Carbon::parse('2018-11-28 00:00:00')->floatDiffInMonths(Carbon::parse('2018-10-28 00:00:00')));
@@ -1684,44 +1684,132 @@ class DiffTest extends AbstractTestCase
 
     public function testFloatDiffWithRealUnits()
     {
+        $from = Carbon::parse('2021-03-27 20:00 Europe/Warsaw');
+        $to = Carbon::parse('2021-03-27 20:00 Europe/London');
+        $from->floatDiffInRealDays($to);
+
+        $this->assertSame('2021-03-27 20:00:00 Europe/Warsaw', $from->format('Y-m-d H:i:s e'));
+        $this->assertSame('2021-03-27 20:00:00 Europe/London', $to->format('Y-m-d H:i:s e'));
+
         date_default_timezone_set('UTC');
+        $this->assertVeryClose(1.0006944444444446, Carbon::parse('2018-12-01 00:00')->floatDiffInRealDays(Carbon::parse('2018-12-02 00:01'), true));
 
-        $this->assertSame(1.0006944444444443, Carbon::parse('2018-12-01 00:00')->floatDiffInRealDays(Carbon::parse('2018-12-02 00:01'), true));
-        $this->assertSame(1.0006944444444443 / 7, Carbon::parse('2018-12-01 00:00')->floatDiffInRealWeeks(Carbon::parse('2018-12-02 00:01'), true));
+        $this->assertVeryClose(0.9583333333333334, Carbon::parse('2021-03-27 20:00 Europe/Warsaw')->floatDiffInRealDays('2021-03-28 20:00'));
+        $this->assertVeryClose(1.9583333333333335, Carbon::parse('2021-03-26 20:00 Europe/Warsaw')->floatDiffInRealDays('2021-03-28 20:00'));
+        $this->assertVeryClose(1.9583333333333335, Carbon::parse('2021-03-27 20:00 Europe/Warsaw')->floatDiffInRealDays('2021-03-29 20:00'));
+        $this->assertVeryClose(1.0416666666666667, Carbon::parse('2021-10-30 20:00 Europe/Warsaw')->floatDiffInRealDays('2021-10-31 20:00'));
+        $this->assertVeryClose(1.0006944444444443, Carbon::parse('2018-12-01 00:00')->floatDiffInRealDays(Carbon::parse('2018-12-02 00:01')));
 
-        $this->assertSame(0.9714742503779745, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2018-04-12 14:24:58.987421'), true));
-        $this->assertSame(0.9714742503779745, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInRealMonths(Carbon::parse('2018-03-13 20:55:12.321456'), true));
-        $this->assertSame(0.9714742503779745, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2018-04-12 14:24:58.987421')));
-        $this->assertSame(-0.9714742503779745, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInRealMonths(Carbon::parse('2018-03-13 20:55:12.321456')));
+        $this->assertVeryClose(1.0006944444444443, Carbon::parse('2018-12-01 00:00')->floatDiffInRealDays(Carbon::parse('2018-12-02 00:01')));
+        $this->assertVeryClose(1.0006944444444443 / 7, Carbon::parse('2018-12-01 00:00')->floatDiffInRealWeeks(Carbon::parse('2018-12-02 00:01')));
 
-        $this->assertSame(16.557633744585264, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2019-06-30 14:24:58.987421'), true));
+        $this->assertVeryClose(0.9590003979857377, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2018-04-12 14:24:58.987421'), true));
+        $this->assertVeryClose(0.9590003979857377, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInRealMonths(Carbon::parse('2018-03-13 20:55:12.321456'), true));
+        $this->assertVeryClose(0.9590003979857377, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2018-04-12 14:24:58.987421'), false));
+        $this->assertVeryClose(-0.9590003979857377, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInRealMonths(Carbon::parse('2018-03-13 20:55:12.321456'), false));
 
-        $this->assertSame(15.971474250377973, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2019-06-12 14:24:58.987421'), true));
-        $this->assertSame(15.971474250377973, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInRealMonths(Carbon::parse('2018-02-13 20:55:12.321456'), true));
-        $this->assertSame(15.971474250377973, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2019-06-12 14:24:58.987421')));
-        $this->assertSame(-15.971474250377973, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInRealMonths(Carbon::parse('2018-02-13 20:55:12.321456')));
+        $this->assertVeryClose(1.0006944444444443 / 7, Carbon::parse('2018-12-01 00:00')->floatDiffInRealWeeks(Carbon::parse('2018-12-02 00:01')));
+        $this->assertVeryClose(1.0006944444444443 / 7, Carbon::parse('2018-12-01 00:00')->floatDiffInRealWeeks(Carbon::parse('2018-12-02 00:01'), true));
+
+        $this->assertVeryClose(0.9590003979857377, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2018-04-12 14:24:58.987421')));
+        $this->assertVeryClose(-0.9590003979857377, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInRealMonths(Carbon::parse('2018-03-13 20:55:12.321456')));
+
+        $this->assertVeryClose(16.557633744585264, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2019-06-30 14:24:58.987421'), true));
+
+        $this->assertVeryClose(15.9590003979857377, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2019-06-12 14:24:58.987421'), true));
+        $this->assertVeryClose(15.9590003979857377, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInRealMonths(Carbon::parse('2018-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(15.9590003979857377, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealMonths(Carbon::parse('2019-06-12 14:24:58.987421')));
+        $this->assertVeryClose(-15.9590003979857377, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInRealMonths(Carbon::parse('2018-02-13 20:55:12.321456')));
 
         $this->assertSame(1.0, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2019-02-13 20:55:12.321456'), true));
-        $this->assertSame(1.3746000338015283, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2019-06-30 14:24:58.987421'), true));
-        $this->assertSame(0.9609014036645421, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2019-01-30 14:24:58.987421'), true));
+        $this->assertVeryClose(1.3746000338015283, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2019-06-30 14:24:58.987421'), true));
+        $this->assertVeryClose(0.9609014036645421, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2019-01-30 14:24:58.987421'), true));
 
-        $this->assertSame(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2019-06-12 14:24:58.987421'), true));
-        $this->assertSame(1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInRealYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
-        $this->assertSame(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2019-06-12 14:24:58.987421')));
-        $this->assertSame(-1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInRealYears(Carbon::parse('2018-02-13 20:55:12.321456')));
+        $this->assertVeryClose(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2019-06-12 14:24:58.987421'), true));
+        $this->assertVeryClose(1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInRealYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2019-06-12 14:24:58.987421')));
+        $this->assertVeryClose(-1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInRealYears(Carbon::parse('2018-02-13 20:55:12.321456')));
 
-        $this->assertSame(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2023-06-12 14:24:58.987421'), true));
-        $this->assertSame(5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInRealYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
-        $this->assertSame(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2023-06-12 14:24:58.987421')));
-        $this->assertSame(-5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInRealYears(Carbon::parse('2018-02-13 20:55:12.321456')));
+        $this->assertVeryClose(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2023-06-12 14:24:58.987421'), true));
+        $this->assertVeryClose(5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInRealYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInRealYears(Carbon::parse('2023-06-12 14:24:58.987421')));
+        $this->assertVeryClose(-5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInRealYears(Carbon::parse('2018-02-13 20:55:12.321456')));
 
-        $this->assertSame(1.0, Carbon::parse('2018-10-01 00:00:00', 'Europe/Paris')->floatDiffInRealMonths(Carbon::parse('2018-11-01 00:00:00', 'Europe/Paris'), true));
+        $this->assertVeryClose(1.0336021505376345, Carbon::parse('2018-10-01 00:00:00', 'Europe/Paris')->floatDiffInRealMonths(Carbon::parse('2018-11-01 00:00:00', 'Europe/Paris'), true));
         $this->assertSame(1.0, Carbon::parse('2018-10-28 00:00:00')->floatDiffInRealMonths(Carbon::parse('2018-11-28 00:00:00'), true));
-        $this->assertSame(1.0, Carbon::parse('2018-10-28 00:00:00', 'Europe/Paris')->floatDiffInRealMonths(Carbon::parse('2018-11-28 00:00:00', 'Europe/Paris'), true));
+        $this->assertVeryClose(1.0013888888888889, Carbon::parse('2018-10-28 00:00:00', 'Europe/Paris')->floatDiffInRealMonths(Carbon::parse('2018-11-28 00:00:00', 'Europe/Paris'), true));
 
-        $this->assertSame(-1.0, Carbon::parse('2018-11-01 00:00:00', 'Europe/Paris')->floatDiffInRealMonths(Carbon::parse('2018-10-01 00:00:00', 'Europe/Paris')));
+        $this->assertVeryClose(-1.0336021505376345, Carbon::parse('2018-11-01 00:00:00', 'Europe/Paris')->floatDiffInRealMonths(Carbon::parse('2018-10-01 00:00:00', 'Europe/Paris')));
         $this->assertSame(-1.0, Carbon::parse('2018-11-28 00:00:00')->floatDiffInRealMonths(Carbon::parse('2018-10-28 00:00:00')));
-        $this->assertSame(-1.0, Carbon::parse('2018-11-28 00:00:00', 'Europe/Paris')->floatDiffInRealMonths(Carbon::parse('2018-10-28 00:00:00', 'Europe/Paris')));
+        $this->assertVeryClose(-1.0013888888888889, Carbon::parse('2018-11-28 00:00:00', 'Europe/Paris')->floatDiffInRealMonths(Carbon::parse('2018-10-28 00:00:00', 'Europe/Paris')));
+
+        Carbon::setTestNow('2021-03-28 20:00 Europe/Warsaw');
+        $this->assertSame(0.9583333333333334, Carbon::parse('2021-03-27 20:00 Europe/Warsaw')->floatDiffInRealDays());
+    }
+
+    public function testFloatDiffWithUTCUnits()
+    {
+        $from = Carbon::parse('2021-03-27 20:00 Europe/Warsaw');
+        $to = Carbon::parse('2021-03-27 20:00 Europe/London');
+        $from->floatDiffInUtcDays($to);
+
+        $this->assertSame('2021-03-27 20:00:00 Europe/Warsaw', $from->format('Y-m-d H:i:s e'));
+        $this->assertSame('2021-03-27 20:00:00 Europe/London', $to->format('Y-m-d H:i:s e'));
+
+        date_default_timezone_set('UTC');
+        $this->assertVeryClose(1.0006944444444446, Carbon::parse('2018-12-01 00:00')->floatDiffInUtcDays(Carbon::parse('2018-12-02 00:01'), true));
+
+        $this->assertVeryClose(0.9583333333333334, Carbon::parse('2021-03-27 20:00 Europe/Warsaw')->floatDiffInUtcDays('2021-03-28 20:00'));
+        $this->assertVeryClose(1.9583333333333335, Carbon::parse('2021-03-26 20:00 Europe/Warsaw')->floatDiffInUtcDays('2021-03-28 20:00'));
+        $this->assertVeryClose(1.9583333333333335, Carbon::parse('2021-03-27 20:00 Europe/Warsaw')->floatDiffInUtcDays('2021-03-29 20:00'));
+        $this->assertVeryClose(1.0416666666666667, Carbon::parse('2021-10-30 20:00 Europe/Warsaw')->floatDiffInUtcDays('2021-10-31 20:00'));
+        $this->assertVeryClose(1.0006944444444443, Carbon::parse('2018-12-01 00:00')->floatDiffInUtcDays(Carbon::parse('2018-12-02 00:01')));
+
+        $this->assertVeryClose(1.0006944444444443, Carbon::parse('2018-12-01 00:00')->floatDiffInUtcDays(Carbon::parse('2018-12-02 00:01')));
+        $this->assertVeryClose(1.0006944444444443 / 7, Carbon::parse('2018-12-01 00:00')->floatDiffInUtcWeeks(Carbon::parse('2018-12-02 00:01')));
+
+        $this->assertVeryClose(0.9590003979857377, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInUtcMonths(Carbon::parse('2018-04-12 14:24:58.987421'), true));
+        $this->assertVeryClose(0.9590003979857377, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInUtcMonths(Carbon::parse('2018-03-13 20:55:12.321456'), true));
+        $this->assertVeryClose(0.9590003979857377, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInUtcMonths(Carbon::parse('2018-04-12 14:24:58.987421'), false));
+        $this->assertVeryClose(-0.9590003979857377, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInUtcMonths(Carbon::parse('2018-03-13 20:55:12.321456'), false));
+
+        $this->assertVeryClose(1.0006944444444443 / 7, Carbon::parse('2018-12-01 00:00')->floatDiffInUtcWeeks(Carbon::parse('2018-12-02 00:01')));
+        $this->assertVeryClose(1.0006944444444443 / 7, Carbon::parse('2018-12-01 00:00')->floatDiffInUtcWeeks(Carbon::parse('2018-12-02 00:01'), true));
+
+        $this->assertVeryClose(0.9590003979857377, Carbon::parse('2018-03-13 20:55:12.321456')->floatDiffInUtcMonths(Carbon::parse('2018-04-12 14:24:58.987421')));
+        $this->assertVeryClose(-0.9590003979857377, Carbon::parse('2018-04-12 14:24:58.987421')->floatDiffInUtcMonths(Carbon::parse('2018-03-13 20:55:12.321456')));
+
+        $this->assertVeryClose(16.557633744585264, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcMonths(Carbon::parse('2019-06-30 14:24:58.987421'), true));
+
+        $this->assertVeryClose(15.9590003979857377, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcMonths(Carbon::parse('2019-06-12 14:24:58.987421'), true));
+        $this->assertVeryClose(15.9590003979857377, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInUtcMonths(Carbon::parse('2018-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(15.9590003979857377, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcMonths(Carbon::parse('2019-06-12 14:24:58.987421')));
+        $this->assertVeryClose(-15.9590003979857377, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInUtcMonths(Carbon::parse('2018-02-13 20:55:12.321456')));
+
+        $this->assertSame(1.0, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcYears(Carbon::parse('2019-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(1.3746000338015283, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcYears(Carbon::parse('2019-06-30 14:24:58.987421'), true));
+        $this->assertVeryClose(0.9609014036645421, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcYears(Carbon::parse('2019-01-30 14:24:58.987421'), true));
+
+        $this->assertVeryClose(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcYears(Carbon::parse('2019-06-12 14:24:58.987421'), true));
+        $this->assertVeryClose(1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInUtcYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(1.3252849653083778, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcYears(Carbon::parse('2019-06-12 14:24:58.987421')));
+        $this->assertVeryClose(-1.3252849653083778, Carbon::parse('2019-06-12 14:24:58.987421')->floatDiffInUtcYears(Carbon::parse('2018-02-13 20:55:12.321456')));
+
+        $this->assertVeryClose(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcYears(Carbon::parse('2023-06-12 14:24:58.987421'), true));
+        $this->assertVeryClose(5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInUtcYears(Carbon::parse('2018-02-13 20:55:12.321456'), true));
+        $this->assertVeryClose(5.325284965308378, Carbon::parse('2018-02-13 20:55:12.321456')->floatDiffInUtcYears(Carbon::parse('2023-06-12 14:24:58.987421')));
+        $this->assertVeryClose(-5.325284965308378, Carbon::parse('2023-06-12 14:24:58.987421')->floatDiffInUtcYears(Carbon::parse('2018-02-13 20:55:12.321456')));
+
+        $this->assertVeryClose(1.0336021505376345, Carbon::parse('2018-10-01 00:00:00', 'Europe/Paris')->floatDiffInUtcMonths(Carbon::parse('2018-11-01 00:00:00', 'Europe/Paris'), true));
+        $this->assertSame(1.0, Carbon::parse('2018-10-28 00:00:00')->floatDiffInUtcMonths(Carbon::parse('2018-11-28 00:00:00'), true));
+        $this->assertVeryClose(1.0013888888888889, Carbon::parse('2018-10-28 00:00:00', 'Europe/Paris')->floatDiffInUtcMonths(Carbon::parse('2018-11-28 00:00:00', 'Europe/Paris'), true));
+
+        $this->assertVeryClose(-1.0336021505376345, Carbon::parse('2018-11-01 00:00:00', 'Europe/Paris')->floatDiffInUtcMonths(Carbon::parse('2018-10-01 00:00:00', 'Europe/Paris')));
+        $this->assertSame(-1.0, Carbon::parse('2018-11-28 00:00:00')->floatDiffInUtcMonths(Carbon::parse('2018-10-28 00:00:00')));
+        $this->assertVeryClose(-1.0013888888888889, Carbon::parse('2018-11-28 00:00:00', 'Europe/Paris')->floatDiffInUtcMonths(Carbon::parse('2018-10-28 00:00:00', 'Europe/Paris')));
+
+        Carbon::setTestNow('2021-03-28 20:00 Europe/Warsaw');
+        $this->assertSame(0.9583333333333334, Carbon::parse('2021-03-27 20:00 Europe/Warsaw')->floatDiffInUtcDays());
     }
 
     /**
@@ -1776,6 +1864,23 @@ class DiffTest extends AbstractTestCase
         $this->assertSame(1, Carbon::parse('2018-07-01')->diffAsDateInterval(Carbon::parse('2018-07-02')->utc())->days);
     }
 
+    public function testThreeMonthMinusOneDay()
+    {
+        $start = new Carbon('2022-11-11 22:29:50.000000');
+        $end = $start->addMonths(3);
+        $now = $start->addDay();
+
+        $this->assertSame(3.0, $start->diffInMonths($end));
+        $this->assertSame(3 - 1 / 31, $now->diffInMonths($end));
+
+        $start = new Carbon('2022-04-11 22:29:50.000000');
+        $end = $start->addMonths(3);
+        $now = $start->addDay();
+
+        $this->assertSame(3.0, $start->diffInMonths($end));
+        $this->assertSame(3 - 1 / 30, $now->diffInMonths($end));
+    }
+
     public function testDiffWithZeroAndNonZeroMicroseconds()
     {
         $requestTime = new Carbon('2018-11-14 18:23:12.0 +00:00');
@@ -1794,7 +1899,7 @@ class DiffTest extends AbstractTestCase
         $d1 = Carbon::parse('2019-06-15 12:34:56.123456');
         $d2 = Carbon::parse('2019-06-16 12:34:56.123455');
 
-        $this->assertEqualsWithDelta(-86399.999999, $d2->diffInSeconds($d1), 0.00001);
+        $this->assertVeryClose(-86399.99999899999, $d2->diffInSeconds($d1));
     }
 
     public function testNearlyFullDayDiffInMicroseconds()
@@ -1802,7 +1907,7 @@ class DiffTest extends AbstractTestCase
         $d1 = Carbon::parse('2019-06-15 12:34:56.123456');
         $d2 = Carbon::parse('2019-06-16 12:34:56.123455');
 
-        $this->assertEqualsWithDelta(-86399999999.0, $d2->diffInMicroseconds($d1), 0.00001);
+        $this->assertVeryClose(-86399999999.0, $d2->diffInMicroseconds($d1));
     }
 
     public function testExactMonthDiffInSeconds()
@@ -1846,5 +1951,14 @@ class DiffTest extends AbstractTestCase
             'skip' => ['m', 'w'],
             'minimumUnit' => 'd',
         ]));
+    }
+
+    public function testAFormat()
+    {
+        $past = new Carbon('-3 Days');
+        $today = new Carbon('today');
+        $interval = $today->diff($past);
+
+        $this->assertSame('2', $interval->format('%a'));
     }
 }

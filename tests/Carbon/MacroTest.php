@@ -334,7 +334,7 @@ class MacroTest extends AbstractTestCaseWithOldNow
 
         $subCarbon = new SubCarbon('2024-01-24 00:00');
 
-        SubCarbon::macro('diffInDecades', function (SubCarbon|string $dt = null, $abs = true) {
+        SubCarbon::macro('diffInDecades', function (SubCarbon|string|null $dt = null, $abs = true) {
             return (int) ($this->diffInYears($dt, $abs) / 10);
         });
 
@@ -342,5 +342,12 @@ class MacroTest extends AbstractTestCaseWithOldNow
         $this->assertSame(2, $subCarbon->diffInDecades('2049-01-24 00:00'));
 
         SubCarbon::resetMacros();
+    }
+
+    public function testMacroNameCanStartWithDiff()
+    {
+        Carbon::macro('diffInBusinessDays', static fn () => 2);
+
+        $this->assertSame(2, Carbon::now()->diffInBusinessDays());
     }
 }

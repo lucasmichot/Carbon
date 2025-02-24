@@ -225,7 +225,7 @@ abstract class AbstractTestCase extends TestCase
         $this->assertInstanceOf(CarbonInterval::class, $d);
     }
 
-    public function wrapWithTestNow(Closure $func, CarbonInterface $dt = null): void
+    public function wrapWithTestNow(Closure $func, ?CarbonInterface $dt = null): void
     {
         $test = Carbon::getTestNow();
         $immutableTest = CarbonImmutable::getTestNow();
@@ -341,5 +341,15 @@ abstract class AbstractTestCase extends TestCase
     protected function assertPeriodOptions(int $options, CarbonPeriod $period): void
     {
         $this->assertSame($this->initialOptions | $options, $period->getOptions());
+    }
+
+    protected function assertVeryClose(mixed $expected, mixed $actual, string $message = ''): void
+    {
+        $this->assertEqualsWithDelta(
+            $expected,
+            $actual,
+            0.000000000000001,
+            $message,
+        );
     }
 }

@@ -1,7 +1,6 @@
 parameters:
     scanFiles:
         - lazy/Carbon/MessageFormatter/MessageFormatterMapperStrongType.php
-        - lazy/Carbon/PHPStan/MacroStrongType.php
         - lazy/Carbon/TranslatorStrongType.php
         - lazy/Carbon/UnprotectedDatePeriod.php
         - tests/Fixtures/DateMalformedIntervalStringException.php
@@ -17,7 +16,8 @@ parameters:
         - '#^Call to static method get\(\) on an unknown class Symfony\\Component\\Translation\\PluralizationRules\.$#'
         - '#^Call to an undefined static method#'
         - '#^Call to an undefined method Carbon\\Carbon(Immutable)?::floatDiffIn([A-Za-z]+)\(\)\.$#'
-        - '#^Call to an undefined method Carbon\\Carbon(Immutable)?::diffInReal([A-Za-z]+)\(\)\.$#'
+        - '#^Call to an undefined method Carbon\\Carbon(Immutable)?::(diffInBusinessDays|diffInReal([A-Za-z]+))\(\)\.$#'
+        - '#^Call to an undefined method Carbon\\Carbon(Immutable)?::(add|sub)Real([A-Za-z]+)\(\)\.$#'
         - '#^Unsafe usage of new static\(\)\.$#'
         - '#^Method Carbon\\Carbon(Interface|Immutable)?::(add|sub)[A-Z][A-Za-z]+\(\) invoked with 1 parameter, 0 required\.$#'
         - '#^Call to an undefined method Carbon\\Carbon(Interface|Immutable)?::(super|noThis|toAppTz|copyWithAppTz)\(\)\.$#'
@@ -27,11 +27,9 @@ parameters:
         - '#should return (\S*)(static|\$this)\(Carbon\\CarbonImmutable\)(\|null)? but returns Carbon\\Carbon(Immutable|Interface)(\|null)?\.$#'
         - '#should return (\S*)\$this\(Carbon\\CarbonInterval\)(\|null)? but returns static\(Carbon\\CarbonInterval\)(\|null)?\.$#'
         - '#should return (\S*)static\(Carbon\\CarbonInterval\)(\|null)? but returns Carbon\\CarbonInterval(\|null)?\.$#'
-        - '#^Access to an undefined property DatePeriod::\$include_end_date\.$#'
-        - '#^Call to an undefined method DatePeriod::[a-zA-Z]+\(\)\.$#'
         - '#^Call to an undefined method DateInterval::(spec|optimize)\(\)\.$#'
         - '#^Property Carbon\\Carbon::\$timezone \(Carbon\\CarbonTimeZone\) does not accept string\.$#'
-        - '#^Method class@anonymous/tests/Carbon/TestingAidsTest\.php:\d+::modify\(\) should return class@anonymous/tests/Carbon/TestingAidsTest\.php:\d+ but returns \(DateTimeImmutable\|false\)\.$#'
+        - '#^Method class@anonymous/tests/Carbon/TestingAidsTest\.php:\d+::modify\(\) should return class@anonymous/tests/Carbon/TestingAidsTest\.php:\d+ but returns \(?DateTimeImmutable#'
         -
             message: '#^Undefined variable: \$this$#'
             paths:
@@ -56,6 +54,19 @@ parameters:
             message: '#^Call to an undefined method Carbon\\CarbonImmutable::[a-zA-Z]+Of[a-zA-Z]+\(\)\.$#'
             paths:
                 - tests/CarbonImmutable/GettersTest.php
+        -
+            message: '#^Access to an undefined property Carbon\\CarbonInterval::\$tz_?[Nn]ame\.$#'
+            paths:
+                - tests/CarbonInterval/GettersTest.php
+                - tests/CarbonInterval/SettersTest.php
+        -
+            message: '#^Access to an undefined property Carbon\\CarbonPeriod::\$(include)?(Start|End)Date\.$#'
+            paths:
+                - tests/CarbonPeriod/GettersTest.php
+        -
+            message: '#^Access to protected property Carbon\\CarbonPeriod::\$endDate\.$#'
+            paths:
+                - tests/CarbonPeriod/GettersTest.php
         -
             message: '#^Cannot access property \$locale on Carbon\\CarbonPeriod\|string\.$#'
             paths:
@@ -90,6 +101,14 @@ parameters:
             message: '#^Instantiated class Doctrine\\DBAL\\Platforms\\MySQL57Platform not found\.#'
             paths:
                 - tests/Doctrine/CarbonTypesTest.php
+        -
+            message: '#^Call to an undefined method Symfony\\Contracts\\Translation\\TranslatorInterface::getMessages\(\)\.#'
+            paths:
+                - tests/CarbonInterval/ConstructTest.php
+        -
+            message: '#^Access to protected property Carbon\\CarbonPeriod::\$dateInterval\.#'
+            paths:
+                - tests/CarbonPeriod/CreateTest.php
     excludePaths:
         - '*/src/Carbon/CarbonPeriod.php'
         - '*/src/Carbon/Laravel/ServiceProvider.php'

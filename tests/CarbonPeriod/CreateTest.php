@@ -20,6 +20,7 @@ use Carbon\CarbonInterface;
 use Carbon\CarbonInterval;
 use Carbon\CarbonPeriod;
 use Carbon\CarbonPeriodImmutable;
+use Carbon\Exceptions\InvalidPeriodParameterException;
 use Carbon\Exceptions\NotAPeriodException;
 use Carbon\Month;
 use Carbon\Unit;
@@ -481,13 +482,44 @@ class CreateTest extends AbstractTestCase
     public function testCreateFromDateStringsWithTimezones()
     {
         $periodClass = static::$periodClass;
+        $periodClass = \Carbon\CarbonPeriodImmutable::class;
         $period = $periodClass::create(
             $start = '2018-03-25 10:15:30 Europe/Oslo',
             $end = '2018-03-28 17:25:30 Asia/Kamchatka',
         );
 
+        $this->assertSame('2018-03-25 10:15:30 Europe/Oslo', $period->first()->format('Y-m-d H:i:s e'));
+        $this->assertSame('2018-03-27 10:15:30 Europe/Oslo', $period->last()->format('Y-m-d H:i:s e'));
         $this->assertSame($start, $period->getStartDate()->format('Y-m-d H:i:s e'));
         $this->assertSame($end, $period->getEndDate()->format('Y-m-d H:i:s e'));
+
+        $period = $periodClass::create(
+            '2024-01-01',
+            '2024-01-05',
+            \Carbon\CarbonTimeZone::create('Australia/Melbourne'),
+        );
+        $this->assertSame('Australia/Melbourne', $period->first()->timezone->getName());
+        $this->assertSame('Australia/Melbourne', $period->last()->timezone->getName());
+        $this->assertSame('Australia/Melbourne', $period->getStartDate()->timezone->getName());
+        $this->assertSame('Australia/Melbourne', $period->getEndDate()->timezone->getName());
+        $this->assertSame('2024-01-01 00:00:00 Australia/Melbourne', $period->first()->format('Y-m-d H:i:s e'));
+        $this->assertSame('2024-01-05 00:00:00 Australia/Melbourne', $period->last()->format('Y-m-d H:i:s e'));
+        $this->assertSame('2024-01-01 00:00:00 Australia/Melbourne', $period->getStartDate()->format('Y-m-d H:i:s e'));
+        $this->assertSame('2024-01-05 00:00:00 Australia/Melbourne', $period->getEndDate()->format('Y-m-d H:i:s e'));
+
+        $period = $periodClass::create(
+            '2024-01-01',
+            '2024-01-05',
+            'Australia/Melbourne',
+        );
+        $this->assertSame('Australia/Melbourne', $period->first()->timezone->getName());
+        $this->assertSame('Australia/Melbourne', $period->last()->timezone->getName());
+        $this->assertSame('Australia/Melbourne', $period->getStartDate()->timezone->getName());
+        $this->assertSame('Australia/Melbourne', $period->getEndDate()->timezone->getName());
+        $this->assertSame('2024-01-01 00:00:00 Australia/Melbourne', $period->first()->format('Y-m-d H:i:s e'));
+        $this->assertSame('2024-01-05 00:00:00 Australia/Melbourne', $period->last()->format('Y-m-d H:i:s e'));
+        $this->assertSame('2024-01-01 00:00:00 Australia/Melbourne', $period->getStartDate()->format('Y-m-d H:i:s e'));
+        $this->assertSame('2024-01-05 00:00:00 Australia/Melbourne', $period->getEndDate()->format('Y-m-d H:i:s e'));
     }
 
     public function testCreateWithIntervalInFromStringFormat()
@@ -530,6 +562,16 @@ class CreateTest extends AbstractTestCase
 
     public function testCreateFromCarbonInstances()
     {
+        $date1 = Carbon::parse('2018-06-01');
+        $date2 = Carbon::parse('2018-06-10');
+        $period = $date1->toPeriod($date2, 'P1D');
+
+        $this->assertSame(24.0, $period->getDateInterval()->totalHours);
+        $this->assertInstanceOf(Carbon::class, $period->getStartDate());
+        $this->assertSame('2018-06-01', $period->getStartDate()->format('Y-m-d'));
+        $this->assertInstanceOf(Carbon::class, $period->getEndDate());
+        $this->assertSame('2018-06-10', $period->getEndDate()->format('Y-m-d'));
+
         $period = Carbon::create('2019-01-02')->toPeriod(7);
 
         $this->assertSame(24.0, $period->getDateInterval()->totalHours);
@@ -855,5 +897,65 @@ class CreateTest extends AbstractTestCase
         }
 
         $this->assertSame(2, $period->count());
+    }
+
+    public function testStartAndEndFallback()
+    {
+        Carbon::setTestNow('2024-06-15');
+
+        $this->assertSame([
+            '2024-09-01',
+            '2024-09-30',
+        ], [
+            Carbon::parse('Sep 1')->toPeriod('Sep 30')->start->format('Y-m-d'),
+            Carbon::parse('Sep 1')->toPeriod('Sep 30')->end->format('Y-m-d'),
+        ]);
+
+        $periodClass = static::$periodClass;
+        $period = new $periodClass('Sep 1', 'Sep 30');
+
+        $this->assertSame([
+            '2024-09-01',
+            '2024-09-30',
+        ], [
+            $period->start->format('Y-m-d'),
+            $period->end->format('Y-m-d'),
+        ]);
+
+        $period = new $periodClass('Sep 1');
+
+        $this->assertSame([
+            '2024-09-01',
+            null,
+        ], [
+            $period->start->format('Y-m-d'),
+            $period->end?->format('Y-m-d'),
+        ]);
+    }
+
+    public function testSlashFormat()
+    {
+        $periodClass = static::$periodClass;
+        $period = $periodClass::create('2024-09-01/3 days/2024-09-30');
+
+        $this->assertSame('+3', $period->interval->format('%R%d'));
+        $this->assertSame('3 days', $period->dateInterval->forHumans());
+        $this->assertSame([
+            '2024-09-01',
+            '2024-09-30',
+        ], [
+            $period->start->format('Y-m-d'),
+            $period->end->format('Y-m-d'),
+        ]);
+    }
+
+    public function testInvalidTimezone()
+    {
+        self::expectExceptionObject(new InvalidPeriodParameterException(
+            'Invalid constructor parameters.',
+        ));
+
+        $periodClass = static::$periodClass;
+        new $periodClass('2024-09-01', '3 days', '2024-09-30', 'America/Tokyo');
     }
 }
